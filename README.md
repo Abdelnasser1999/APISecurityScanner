@@ -17,3 +17,10 @@ A .NET 8 NuGet package for scanning API endpoints for common security vulnerabil
 ### XSS:
 - Inject JavaScript payloads, such as `<script>alert('XSS')</script>`, into API inputs.
 - Analyze the API response to identify any reflected or stored content injection.
+## Technical Roadmap
+
+### Project Structure
+- **Scanners:** Contains classes that implement scanning for specific vulnerabilities (e.g., `SQLInjectionScanner`, `XSSScanner`).
+- **Reports:** Responsible for generating detailed reports (`ReportGenerator`).
+- **Utilities:** Helper tools for scanning (e.g., JSON response analysis, HTTP request handling).
+- **Tests:** Unit tests for each scanner module.
