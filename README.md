@@ -8,3 +8,12 @@ A .NET 8 NuGet package for scanning API endpoints for common security vulnerabil
 - Cross-Site Request Forgery (CSRF): Verify if the API is vulnerable to unauthorized commands by attackers.
 - Insecure Direct Object References (IDOR): Check if API endpoints expose unauthorized access to internal objects.
 - Broken Authentication: Analyze endpoints for weak authentication mechanisms.
+## Scan Scenarios
+
+### SQL Injection:
+- Send inputs to the API containing SQL payloads (e.g., `'; DROP TABLE`).
+- Monitor the response to analyze for possible vulnerabilities.
+
+### XSS:
+- Inject JavaScript payloads, such as `<script>alert('XSS')</script>`, into API inputs.
+- Analyze the API response to identify any reflected or stored content injection.
