@@ -9,6 +9,6 @@ namespace APISecurityScanner.Scanners
     public abstract class BaseScanner
     {
         public abstract string Name { get; }
-        public abstract void Scan(string endpoint);
+        public abstract Task Scan(string endpoint);
     }
 }
