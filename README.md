@@ -13,7 +13,7 @@ A .NET 8 NuGet package for scanning API endpoints for common security vulnerabil
 - Insecure Direct Object References (IDOR): Check if API endpoints expose unauthorized access to internal objects.
 - Broken Authentication: Analyze endpoints for weak authentication mechanisms.
 
-- ## Technical Requirements (Update 10/05/2024)
+## Technical Requirements (Update 10/05/2024)
 
 ### SQL Injection Scanner
 - The `SQLInjectionScanner` class sends various payloads to test the API endpoints for potential SQL Injection vulnerabilities.
