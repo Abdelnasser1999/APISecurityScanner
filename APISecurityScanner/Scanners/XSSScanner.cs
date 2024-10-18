@@ -10,12 +10,12 @@ namespace APISecurityScanner.Scanners
         public override string Name => "Cross-Site Scripting (XSS) Scanner";
 
         private readonly HttpClient _httpClient;
-        public List<string> Vulnerabilities { get; private set; } 
+        public List<string> Vulnerabilities { get; private set; }
 
         public XSSScanner(HttpClient httpClient)
         {
             _httpClient = httpClient;
-            Vulnerabilities = new List<string>(); 
+            Vulnerabilities = new List<string>();
         }
 
         public override async Task Scan(string endpoint)

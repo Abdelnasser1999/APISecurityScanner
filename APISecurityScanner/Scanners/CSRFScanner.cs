@@ -15,7 +15,7 @@ namespace APISecurityScanner.Scanners
         public CSRFScanner(HttpClient httpClient)
         {
             _httpClient = httpClient;
-            Vulnerabilities = new List<string>(); 
+            Vulnerabilities = new List<string>();
         }
 
         public override async Task Scan(string endpoint)
