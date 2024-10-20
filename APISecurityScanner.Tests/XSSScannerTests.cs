@@ -6,6 +6,7 @@ using Moq;
 using Moq.Protected;
 using Xunit;
 using APISecurityScanner.Scanners;
+using System.Collections.Generic;
 
 namespace APISecurityScanner.Tests
 {
@@ -33,11 +34,20 @@ namespace APISecurityScanner.Tests
             var scanner = new XSSScanner(httpClient);
             string vulnerableEndpoint = "https://example.com/api/vulnerable"; // Mock vulnerable endpoint
 
+            var requiredParams = new Dictionary<string, string>
+            {
+                { "userId", "1234" }
+            };
+
+            var optionalParams = new List<string>
+            {
+                "comment"
+            };
+
             // Act
-            await scanner.Scan(vulnerableEndpoint);
+            await scanner.Scan(vulnerableEndpoint, requiredParams, optionalParams, HttpMethod.Get);
 
             // Assert
-            // Ensure that the XSS vulnerability was detected
             Assert.NotNull(scanner.Vulnerabilities); // Ensure the list is not null
             Assert.NotEmpty(scanner.Vulnerabilities); // Ensure there's at least one vulnerability detected
         }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -10,39 +11,91 @@ namespace APISecurityScanner.Scanners
         public override string Name => "SQL Injection Scanner";
 
         private readonly HttpClient _httpClient;
-        public List<string> Vulnerabilities { get; private set; }
 
         public SQLInjectionScanner(HttpClient httpClient)
         {
             _httpClient = httpClient;
-            Vulnerabilities = new List<string>();
         }
 
-        public override async Task Scan(string endpoint)
+        public override async Task Scan(string endpoint, Dictionary<string, string> requiredParams, List<string> optionalParams, HttpMethod method)
         {
-            // Example payloads to test for SQL Injection vulnerabilities
             string[] payloads = { "' OR '1'='1", "'; DROP TABLE Users; --", "\" OR 1=1 --" };
 
+            if (method == HttpMethod.Get)
+            {
+                await ScanGetRequests(endpoint, requiredParams, optionalParams, payloads);
+            }
+            else if (method == HttpMethod.Post || method == HttpMethod.Put)
+            {
+                await ScanPostOrPutRequests(endpoint, requiredParams, optionalParams, payloads, method);
+            }
+        }
+
+        private async Task ScanGetRequests(string endpoint, Dictionary<string, string> requiredParams, List<string> optionalParams, string[] payloads)
+        {
             foreach (var payload in payloads)
             {
-                string url = $"{endpoint}?input={Uri.EscapeDataString(payload)}";
-
-                try
+                foreach (var param in optionalParams)
                 {
-                    // Send a request to the API endpoint
-                    HttpResponseMessage response = await _httpClient.GetAsync(url);
-                    string responseContent = await response.Content.ReadAsStringAsync();
+                    var allParams = new Dictionary<string, string>(requiredParams);
+                    allParams[param] = payload;
 
-                    // Basic check for SQL error in the response
-                    if (responseContent.Contains("SQL syntax error"))
+                    string url = $"{endpoint}?{string.Join("&", allParams.Select(p => $"{p.Key}={Uri.EscapeDataString(p.Value)}"))}";
+
+                    try
                     {
-                        Vulnerabilities.Add(url);
-                        Console.WriteLine($"Potential SQL Injection vulnerability found at: {url}");
+                        HttpResponseMessage response = await _httpClient.GetAsync(url);
+                        string responseContent = await response.Content.ReadAsStringAsync();
+
+                        if (responseContent.Contains("SQL syntax error"))
+                        {
+                            Vulnerabilities.Add($"{url} (Parameter: {param})");
+                            Console.WriteLine($"SQL Injection vulnerability found at {url} (Parameter: {param})");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error while scanning {url}: {ex.Message}");
                     }
                 }
-                catch (Exception ex)
+            }
+        }
+
+        private async Task ScanPostOrPutRequests(string endpoint, Dictionary<string, string> requiredParams, List<string> optionalParams, string[] payloads, HttpMethod method)
+        {
+            foreach (var payload in payloads)
+            {
+                foreach (var param in optionalParams)
                 {
-                    Console.WriteLine($"Error while scanning {url}: {ex.Message}");
+                    var formData = new Dictionary<string, string>(requiredParams);
+                    formData[param] = payload;
+
+                    var content = new FormUrlEncodedContent(formData);
+
+                    try
+                    {
+                        HttpResponseMessage response;
+                        if (method == HttpMethod.Post)
+                        {
+                            response = await _httpClient.PostAsync(endpoint, content);
+                        }
+                        else
+                        {
+                            response = await _httpClient.PutAsync(endpoint, content);
+                        }
+
+                        string responseContent = await response.Content.ReadAsStringAsync();
+
+                        if (responseContent.Contains("SQL syntax error"))
+                        {
+                            Vulnerabilities.Add($"{endpoint} [POST/PUT] (Parameter: {param})");
+                            Console.WriteLine($"SQL Injection vulnerability found at {endpoint} [POST/PUT] (Parameter: {param})");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error while scanning {endpoint} [POST/PUT]: {ex.Message}");
+                    }
                 }
             }
         }

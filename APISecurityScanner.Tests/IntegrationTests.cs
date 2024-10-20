@@ -27,11 +27,21 @@ namespace APISecurityScanner.Tests
             // Instantiate the SecurityScannerManager
             var scannerManager = new SecurityScannerManager(scanners);
 
+            var requiredParams = new Dictionary<string, string>
+            {
+                { "sessionId", "validSession" }
+            };
+
+            var optionalParams = new List<string>
+            {
+                "token"
+            };
+
             // Define the endpoint you want to scan
             string endpoint = "https://example.com/api"; // Replace with the actual endpoint
 
             // Run the scans
-            await scannerManager.RunScans(endpoint);
+            await scannerManager.RunScans(endpoint, requiredParams, optionalParams, HttpMethod.Get);
 
             // Generate the report
             var report = scannerManager.GenerateReport();

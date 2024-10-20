@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -7,44 +8,35 @@ namespace APISecurityScanner.Scanners
 {
     public class IDORScanner : BaseScanner
     {
-        public override string Name => "Insecure Direct Object References (IDOR) Scanner";
+        public override string Name => "IDOR Scanner";
 
         private readonly HttpClient _httpClient;
-        public List<string> Vulnerabilities { get; private set; }
 
         public IDORScanner(HttpClient httpClient)
         {
             _httpClient = httpClient;
-            Vulnerabilities = new List<string>();
         }
 
-        public override async Task Scan(string endpoint)
+        public override async Task Scan(string endpoint, Dictionary<string, string> requiredParams, List<string> optionalParams, HttpMethod method)
         {
-            // Example IDs for testing IDOR vulnerabilities
-            string[] ids = { "1", "2", "3", "9999" }; // Include both valid and invalid IDs for testing
+            string[] ids = { "1", "2", "3", "9999" }; // Test with IDs
 
-            foreach (var id in ids)
+            if (method == HttpMethod.Get)
             {
-                string url = $"{endpoint}/{id}";
-
-                try
+                foreach (var id in ids)
                 {
+                    string url = $"{endpoint}/{id}?{string.Join("&", requiredParams.Select(p => $"{p.Key}={Uri.EscapeDataString(p.Value)}"))}";
+
                     HttpResponseMessage response = await _httpClient.GetAsync(url);
                     if (response.IsSuccessStatusCode)
                     {
                         string responseContent = await response.Content.ReadAsStringAsync();
-                        // Here we should check if the user has access to the returned resource
-                        // Simple check for an example - we need to enhance this based on real API responses
-                        if (responseContent.Contains("User Data") && !responseContent.Contains($"ID: {id}"))
+                        if (responseContent.Contains("Sensitive data"))
                         {
-                            Vulnerabilities.Add(url);
+                            Vulnerabilities.Add($"{url} (IDOR)");
                             Console.WriteLine($"Potential IDOR vulnerability found at: {url}");
                         }
                     }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error while scanning {url}: {ex.Message}");
                 }
             }
         }

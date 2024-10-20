@@ -7,19 +7,23 @@ namespace APISecurityScanner.Scanners
     {
         private readonly List<BaseScanner> _scanners;
 
+        // Initialize with a list of scanners
         public SecurityScannerManager(List<BaseScanner> scanners)
         {
             _scanners = scanners;
         }
 
-        public async Task RunScans(string endpoint)
+        // Run all scanners against a specific endpoint
+        public async Task RunScans(string endpoint, Dictionary<string, string> requiredParams, List<string> optionalParams, HttpMethod method)
         {
             foreach (var scanner in _scanners)
             {
-                await scanner.Scan(endpoint);
+                // Run each scanner with required and optional parameters
+                await scanner.Scan(endpoint, requiredParams, optionalParams, method);
             }
         }
 
+        // Generate a detailed report based on the vulnerabilities found by all scanners
         public List<string> GenerateReport()
         {
             var report = new List<string>();

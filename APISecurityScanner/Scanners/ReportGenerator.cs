@@ -6,6 +6,7 @@ namespace APISecurityScanner.Reports
 {
     public class ReportGenerator
     {
+        // Generate a detailed report based on the results from all scanners
         public string GenerateReport(List<BaseScanner> scanners)
         {
             var report = new StringBuilder();
@@ -20,6 +21,7 @@ namespace APISecurityScanner.Reports
                 {
                     foreach (var vulnerability in scanner.Vulnerabilities)
                     {
+                        // Add the vulnerability details to the report
                         report.AppendLine($"- {vulnerability}");
                     }
                 }

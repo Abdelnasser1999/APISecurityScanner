@@ -6,6 +6,7 @@ using Moq;
 using Moq.Protected;
 using Xunit;
 using APISecurityScanner.Scanners;
+using System.Collections.Generic;
 
 namespace APISecurityScanner.Tests
 {
@@ -33,8 +34,18 @@ namespace APISecurityScanner.Tests
             var scanner = new BrokenAuthenticationScanner(httpClient);
             string vulnerableEndpoint = "https://example.com/api/protected"; // Mock vulnerable endpoint
 
+            var requiredParams = new Dictionary<string, string>
+            {
+                { "username", "testuser" }
+            };
+
+            var optionalParams = new List<string>
+            {
+                "token"
+            };
+
             // Act
-            await scanner.Scan(vulnerableEndpoint);
+            await scanner.Scan(vulnerableEndpoint, requiredParams, optionalParams, HttpMethod.Get);
 
             // Assert
             Assert.NotNull(scanner.Vulnerabilities); // Ensure the vulnerabilities list is not null

@@ -26,8 +26,24 @@ class Program
         // Define the endpoint you want to scan
         string endpoint = "https://example.com/api"; // Replace with the actual endpoint
 
+        // Define required and optional parameters
+        var requiredParams = new Dictionary<string, string>
+        {
+            { "sessionId", "validSessionId" },  // Example of a required parameter
+            { "username", "testuser" }
+        };
+
+        var optionalParams = new List<string>
+        {
+            "token",   // Example of an optional parameter
+            "search"
+        };
+
+        // Choose the HTTP method (GET, POST, PUT)
+        HttpMethod method = HttpMethod.Get;  // You can change this based on the endpoint requirements
+
         // Run the scans
-        await scannerManager.RunScans(endpoint);
+        await scannerManager.RunScans(endpoint, requiredParams, optionalParams, method);
 
         // Generate the report
         var report = scannerManager.GenerateReport();

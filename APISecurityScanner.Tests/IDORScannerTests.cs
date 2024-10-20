@@ -6,6 +6,7 @@ using Moq;
 using Moq.Protected;
 using Xunit;
 using APISecurityScanner.Scanners;
+using System.Collections.Generic;
 
 namespace APISecurityScanner.Tests
 {
@@ -26,15 +27,25 @@ namespace APISecurityScanner.Tests
                 .ReturnsAsync(new HttpResponseMessage
                 {
                     StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent("User Data without ID: 9999") // Simulate IDOR vulnerability detection
+                    Content = new StringContent("Sensitive data exposed for ID: 9999") // Simulate IDOR vulnerability
                 });
 
             var httpClient = new HttpClient(mockHttpMessageHandler.Object);
             var scanner = new IDORScanner(httpClient);
             string vulnerableEndpoint = "https://example.com/api/resource"; // Mock vulnerable endpoint
 
+            var requiredParams = new Dictionary<string, string>
+            {
+                { "userId", "1234" }
+            };
+
+            var optionalParams = new List<string>
+            {
+                "resourceId"
+            };
+
             // Act
-            await scanner.Scan(vulnerableEndpoint);
+            await scanner.Scan(vulnerableEndpoint, requiredParams, optionalParams, HttpMethod.Get);
 
             // Assert
             Assert.NotNull(scanner.Vulnerabilities); // Ensure the vulnerabilities list is not null

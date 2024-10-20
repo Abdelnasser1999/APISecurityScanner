@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -10,47 +11,64 @@ namespace APISecurityScanner.Scanners
         public override string Name => "Broken Authentication Scanner";
 
         private readonly HttpClient _httpClient;
-        public List<string> Vulnerabilities { get; private set; }
 
         public BrokenAuthenticationScanner(HttpClient httpClient)
         {
             _httpClient = httpClient;
-            Vulnerabilities = new List<string>();
         }
 
-        public override async Task Scan(string endpoint)
+        public override async Task Scan(string endpoint, Dictionary<string, string> requiredParams, List<string> optionalParams, HttpMethod method)
         {
-            // Test without authentication
-            try
+            string payload = "invalidtoken"; // Example payload for broken authentication
+
+            if (method == HttpMethod.Get)
             {
-                HttpResponseMessage response = await _httpClient.GetAsync(endpoint);
+                await ScanGetRequest(endpoint, requiredParams, optionalParams, payload);
+            }
+            else if (method == HttpMethod.Post || method == HttpMethod.Put)
+            {
+                await ScanPostOrPutRequest(endpoint, requiredParams, optionalParams, payload, method);
+            }
+        }
+
+        private async Task ScanGetRequest(string endpoint, Dictionary<string, string> requiredParams, List<string> optionalParams, string payload)
+        {
+            foreach (var param in optionalParams)
+            {
+                var allParams = new Dictionary<string, string>(requiredParams);
+                allParams[param] = payload;
+
+                string url = $"{endpoint}?{string.Join("&", allParams.Select(p => $"{p.Key}={Uri.EscapeDataString(p.Value)}"))}";
+                HttpResponseMessage response = await _httpClient.GetAsync(url);
+
                 if (response.IsSuccessStatusCode)
                 {
-                    Vulnerabilities.Add(endpoint); // Add to vulnerabilities if found
-                    Console.WriteLine($"Potential Broken Authentication found at: {endpoint}");
+                    Vulnerabilities.Add($"{url} (Param: {param})");
+                    Console.WriteLine($"Potential Broken Authentication vulnerability found at: {url} (Param: {param})");
                 }
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error while scanning {endpoint}: {ex.Message}");
-            }
+        }
 
-            // Test with invalid/expired credentials (Basic auth example)
-            var invalidAuthHeader = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes("invaliduser:invalidpassword"));
-            _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", invalidAuthHeader);
-
-            try
+        private async Task ScanPostOrPutRequest(string endpoint, Dictionary<string, string> requiredParams, List<string> optionalParams, string payload, HttpMethod method)
+        {
+            foreach (var param in optionalParams)
             {
-                HttpResponseMessage response = await _httpClient.GetAsync(endpoint);
+                var formData = new Dictionary<string, string>(requiredParams);
+                formData[param] = payload;
+
+                var content = new FormUrlEncodedContent(formData);
+                HttpResponseMessage response;
+
+                if (method == HttpMethod.Post)
+                    response = await _httpClient.PostAsync(endpoint, content);
+                else
+                    response = await _httpClient.PutAsync(endpoint, content);
+
                 if (response.IsSuccessStatusCode)
                 {
-                    Vulnerabilities.Add(endpoint);
-                    Console.WriteLine($"Potential Broken Authentication found with invalid credentials at: {endpoint}");
+                    Vulnerabilities.Add($"{endpoint} [POST/PUT] (Param: {param})");
+                    Console.WriteLine($"Potential Broken Authentication vulnerability found at: {endpoint} [POST/PUT] (Param: {param})");
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error while scanning {endpoint} with invalid credentials: {ex.Message}");
             }
         }
     }
