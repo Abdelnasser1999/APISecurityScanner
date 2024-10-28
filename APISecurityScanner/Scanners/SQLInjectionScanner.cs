@@ -20,7 +20,7 @@ namespace APISecurityScanner.Scanners
         public override async Task Scan(string endpoint, Dictionary<string, string> requiredParams, List<string> optionalParams, HttpMethod method)
         {
             string[] payloads = { "' OR '1'='1", "'; DROP TABLE Users; --", "\" OR 1=1 --" };
-
+            //Console.WriteLine(Name + " Scanning " + endpoint);
             if (method == HttpMethod.Get)
             {
                 await ScanGetRequests(endpoint, requiredParams, optionalParams, payloads);
@@ -35,32 +35,51 @@ namespace APISecurityScanner.Scanners
         {
             foreach (var payload in payloads)
             {
-                foreach (var param in optionalParams)
+                // استخدام المعلمات الإلزامية أو فقط تجربة الحمولات مباشرة إذا لم توجد معلمات اختيارية
+                var allParams = new Dictionary<string, string>(requiredParams);
+
+                if (optionalParams.Count > 0)
                 {
-                    var allParams = new Dictionary<string, string>(requiredParams);
-                    allParams[param] = payload;
-
-                    string url = $"{endpoint}?{string.Join("&", allParams.Select(p => $"{p.Key}={Uri.EscapeDataString(p.Value)}"))}";
-
-                    try
+                    foreach (var param in optionalParams)
                     {
-                        HttpResponseMessage response = await _httpClient.GetAsync(url);
-                        string responseContent = await response.Content.ReadAsStringAsync();
+                        allParams[param] = payload;
+                        string url = $"{endpoint}?{string.Join("&", allParams.Select(p => $"{p.Key}={Uri.EscapeDataString(p.Value)}"))}";
 
-                        if (responseContent.Contains("SQL syntax error"))
-                        {
-                            Vulnerabilities.Add($"{url} (Parameter: {param})");
-                            Console.WriteLine($"SQL Injection vulnerability found at {url} (Parameter: {param})");
-                        }
+                        // تنفيذ الطلب والتحقق من الاستجابة
+                        await ExecuteSqlInjectionCheck(url, param);
                     }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Error while scanning {url}: {ex.Message}");
-                    }
+                }
+                else
+                {
+                    // إجراء الفحص مباشرة على نقطة النهاية بدون معلمات اختيارية
+                    string url = $"{endpoint}?{string.Join("&", allParams.Select(p => $"{p.Key}={Uri.EscapeDataString(payload)}"))}";
+                    await ExecuteSqlInjectionCheck(url, "DirectPayload");
                 }
             }
         }
 
+        private async Task ExecuteSqlInjectionCheck(string url, string param)
+        {
+            try
+            {
+                HttpResponseMessage response = await _httpClient.GetAsync(url);
+                string responseContent = await response.Content.ReadAsStringAsync();
+
+                if (responseContent.Contains("SQL syntax error"))
+                {
+                    Vulnerabilities.Add($"{url} (Parameter: {param})");
+                    Console.WriteLine($"SQL Injection vulnerability found at {url} (Parameter: {param})");
+                }
+                else
+                {
+                    Console.WriteLine($"**** NO *** SQL Injection vulnerability found at {url} (Parameter: {param})");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error while scanning {url}: {ex.Message}");
+            }
+        }
         private async Task ScanPostOrPutRequests(string endpoint, Dictionary<string, string> requiredParams, List<string> optionalParams, string[] payloads, HttpMethod method)
         {
             foreach (var payload in payloads)

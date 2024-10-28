@@ -31,10 +31,11 @@ namespace APISecurityScanner.Scanners
                     if (response.IsSuccessStatusCode)
                     {
                         string responseContent = await response.Content.ReadAsStringAsync();
-                        if (responseContent.Contains("Sensitive data"))
+                        // تحقق من الثغرات
+                        if (responseContent.Contains("sensitiveData")) // مثال على التحقق
                         {
-                            Vulnerabilities.Add($"{url} (IDOR)");
-                            Console.WriteLine($"Potential IDOR vulnerability found at: {url}");
+                            Vulnerabilities.Add($"Potential IDOR found at {url}");
+                            Console.WriteLine($"Potential IDOR found at {url}");
                         }
                     }
                 }
