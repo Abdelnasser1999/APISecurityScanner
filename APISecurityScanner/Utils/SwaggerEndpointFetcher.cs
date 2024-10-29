@@ -34,33 +34,70 @@ namespace APISecurityScanner.Utils
                 foreach (var method in path.Value.Children<JProperty>())
                 {
                     var httpMethod = method.Name; // نوع الطلب HTTP
+
+                    // قائمة المعلمات
+                    var requiredParams = new Dictionary<string, string>();
+                    var optionalParams = new List<string>();
+
+                    // جلب المعلمات من "parameters" 
+                    var parameters = method.Value["parameters"];
+                    if (parameters != null)
+                    {
+                        foreach (var param in parameters)
+                        {
+                            var paramName = param["name"].Value<string>();
+                            var isRequired = param["required"]?.Value<bool>() ?? false;
+
+                            if (isRequired)
+                            {
+                                requiredParams[paramName] = param["schema"]?["example"]?.Value<string>() ?? "";
+                            }
+                            else
+                            {
+                                optionalParams.Add(paramName);
+                            }
+                        }
+                    }
+
+                    // جلب المعلمات من "requestBody" إذا كانت موجودة
+                    var requestBody = method.Value["requestBody"]?["content"];
+                    if (requestBody != null)
+                    {
+                        var schemaProperties = requestBody.First.First["schema"]?["properties"];
+                        if (schemaProperties != null)
+                        {
+                            foreach (var property in schemaProperties)
+                            {
+                                var propName = property.Path.Split('.').Last();
+                                requiredParams[propName] = property.First["example"]?.Value<string>() ?? "";
+                            }
+                        }
+                    }
+
+                    //// طباعة القيم للتأكد من الجلب
+                    ////Console.WriteLine($"Required Parameters for {pathUrl} ({httpMethod}): Count = {requiredParams.Count}");
+                    //foreach (var param in requiredParams)
+                    //{
+                    //    Console.WriteLine($"- {param.Key}: {param.Value}");
+                    //}
+
+                    ////Console.WriteLine($"Optional Parameters for {pathUrl} ({httpMethod}): Count = {optionalParams.Count}");
+                    //foreach (var param in optionalParams)
+                    //{
+                    //    Console.WriteLine($"- {param}");
+                    //}
+
                     var endpointData = new EndpointData
                     {
                         Url = pathUrl,
                         HttpMethod = httpMethod,
-                        RequiredParams = method.Value["parameters"]?
-                            .Where(p => p["required"]?.Value<bool>() == true)
-                            .ToDictionary(
-                                p => p["name"].Value<string>(),
-                                p => p["example"]?.Value<string>() ?? ""
-                            ) ?? new Dictionary<string, string>(),
-                        OptionalParams = method.Value["parameters"]?
-                            .Where(p => p["required"]?.Value<bool>() == false)
-                            .Select(p => p["name"].Value<string>())
-                            .ToList() ?? new List<string>()
+                        RequiredParams = requiredParams,
+                        OptionalParams = optionalParams
                     };
 
                     endpoints.Add(endpointData);
                 }
             }
-            //foreach(var point in endpoints)
-            //{
-            //    Console.WriteLine(point.Url);
-            //    Console.WriteLine(point.HttpMethod);
-            //    Console.WriteLine(point.RequiredParams);
-            //    Console.WriteLine(point.OptionalParams);
-            //}
-
             return endpoints;
         }
 

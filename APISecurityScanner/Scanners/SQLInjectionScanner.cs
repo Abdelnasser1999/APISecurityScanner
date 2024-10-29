@@ -64,8 +64,8 @@ namespace APISecurityScanner.Scanners
             {
                 HttpResponseMessage response = await _httpClient.GetAsync(url);
                 string responseContent = await response.Content.ReadAsStringAsync();
-
-                if (responseContent.Contains("SQL syntax error"))
+                Console.WriteLine("response " + responseContent);
+                if (responseContent.Contains("Query") || responseContent.Contains("SELECT"))
                 {
                     Vulnerabilities.Add($"{url} (Parameter: {param})");
                     Console.WriteLine($"SQL Injection vulnerability found at {url} (Parameter: {param})");
