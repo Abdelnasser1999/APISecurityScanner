@@ -64,7 +64,7 @@ namespace APISecurityScanner.Scanners
             {
                 HttpResponseMessage response = await _httpClient.GetAsync(url);
                 string responseContent = await response.Content.ReadAsStringAsync();
-                Console.WriteLine("response " + responseContent);
+                //Console.WriteLine("response " + responseContent);
                 if (responseContent.Contains("Query") || responseContent.Contains("SELECT"))
                 {
                     Vulnerabilities.Add($"{url} (Parameter: {param})");
@@ -72,7 +72,7 @@ namespace APISecurityScanner.Scanners
                 }
                 else
                 {
-                    Console.WriteLine($"**** NO *** SQL Injection vulnerability found at {url} (Parameter: {param})");
+                    //Console.WriteLine($"**** NO *** SQL Injection vulnerability found at {url} (Parameter: {param})");
                 }
             }
             catch (Exception ex)

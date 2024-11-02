@@ -119,13 +119,10 @@ namespace APISecurityScanner.Utils
         {
             await RunScansOnEndpoints(swaggerUrl);
 
-            var report = _scannerManager.GenerateReport();
+            var report =await _scannerManager.GenerateReportAsync();
 
             Console.WriteLine("Detected vulnerabilities:");
-            foreach (var vulnerability in report)
-            {
-                Console.WriteLine(vulnerability); 
-            }
+            Console.WriteLine(report); 
         }
     }
 }

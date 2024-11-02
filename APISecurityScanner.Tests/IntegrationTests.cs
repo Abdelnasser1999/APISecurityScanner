@@ -44,7 +44,7 @@ namespace APISecurityScanner.Tests
             await scannerManager.RunScans(endpoint, requiredParams, optionalParams, HttpMethod.Get);
 
             // Generate the report
-            var report = scannerManager.GenerateReport();
+            var report = await scannerManager.GenerateReportAsync();
 
             // Assert that the report is not empty
             Assert.NotEmpty(report);

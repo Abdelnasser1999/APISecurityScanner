@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using APISecurityScanner.Reports;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace APISecurityScanner.Scanners
@@ -24,26 +25,27 @@ namespace APISecurityScanner.Scanners
         }
 
         // Generate a detailed report based on the vulnerabilities found by all scanners
-        public List<string> GenerateReport()
+        public async Task<string> GenerateReportAsync()
         {
-            var report = new List<string>();
+            ReportGenerator reportGenerator = new ReportGenerator("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");
+            var report = await reportGenerator.GenerateReportAsync(_scanners);
 
-            foreach (var scanner in _scanners)
-            {
-                report.Add($"--- Scanner: {scanner.Name} ---");
+            //foreach (var scanner in _scanners)
+            //{
+            //    report.Add($"--- Scanner: {scanner.Name} ---");
 
-                if (scanner.Vulnerabilities.Count > 0)
-                {
-                    foreach (var vulnerability in scanner.Vulnerabilities)
-                    {
-                        report.Add($"[Vulnerability] {vulnerability}");
-                    }
-                }
-                else
-                {
-                    report.Add("No vulnerabilities found.");
-                }
-            }
+            //    if (scanner.Vulnerabilities.Count > 0)
+            //    {
+            //        foreach (var vulnerability in scanner.Vulnerabilities)
+            //        {
+            //            report.Add($"[Vulnerability] {vulnerability}");
+            //        }
+            //    }
+            //    else
+            //    {
+            //        report.Add("No vulnerabilities found.");
+            //    }
+            //}
 
             return report;
         }
