@@ -1,4 +1,4 @@
-# API Security Scanner
+# APISecurityScanner ( Update 11/02/2024 )
 
 A .NET 8 NuGet package for scanning API endpoints for common security vulnerabilities like SQL Injection, XSS, CSRF, IDOR, and Broken Authentication.
 
@@ -9,78 +9,54 @@ A .NET 8 NuGet package for scanning API endpoints for common security vulnerabil
 - **IDOR Scanner:** Detects Insecure Direct Object References (IDOR) vulnerabilities by testing unauthorized access to internal objects through exposed endpoints.
 - **Broken Authentication Scanner:** Detects weaknesses in API authentication mechanisms by attempting to access protected endpoints with invalid or no credentials.
 
-## Usage
-
-1. To use the scanner, instantiate the desired scanner class (e.g., `SQLInjectionScanner`, `XSSScanner`, `CSRFScanner`, `IDORScanner`, `BrokenAuthenticationScanner`).
-2. Call the `Scan` method with the API endpoint to test.
-3. Check the `Vulnerabilities` list for detected vulnerabilities.
-
-## Technical Requirements
 
 ### Vulnerabilities to Scan:
-- SQL Injection: Detect malicious SQL code in user inputs.
-- Cross-Site Scripting (XSS): Identify suspicious JavaScript code that may be injected into the API.
-- Cross-Site Request Forgery (CSRF): Verify if the API is vulnerable to unauthorized commands by attackers.
-- Insecure Direct Object References (IDOR): Check if API endpoints expose unauthorized access to internal objects.
-- Broken Authentication: Analyze endpoints for weak authentication mechanisms.
+- **SQL Injection:** Detects malicious SQL code in user inputs.
+- **Cross-Site Scripting (XSS):** Identifies suspicious JavaScript code that may be injected into the API.
+- **Cross-Site Request Forgery (CSRF):** Verifies if the API is vulnerable to unauthorized commands by attackers.
+- **Insecure Direct Object References (IDOR):** Checks if API endpoints expose unauthorized access to internal objects.
+- **Broken Authentication:** Analyzes endpoints for weak authentication mechanisms.
 
-## Technical Requirements (Update 10/17/2024)
+## Project Structure
+- **Scanners:** Contains classes that implement scanning for specific vulnerabilities (e.g., `SQLInjectionScanner`, `XSSScanner`, `CSRFScanner`, `IDORScanner`, `BrokenAuthenticationScanner`).
+- **Security Scanner Manager:** Organizes scans and coordinates the execution of different scanners. It aggregates the final results from each scanner and generates a comprehensive report.
+- **Swagger Endpoint Fetcher:** Fetches all endpoints from the Swagger documentation of the target API, analyzing required parameters to facilitate scanning.
+- **AI Recommendation Service:** A built-in service that analyzes the scan results and provides dynamic recommendations on how to address each discovered vulnerability using OpenAI's GPT-4 model.
+- **Reports:** Responsible for generating detailed reports (e.g., `ReportGenerator`).
+- **Utilities:** Helper tools for scanning, including JSON response analysis and HTTP request handling.
+- **Tests:** Unit tests for each scanner module.
 
-### SQL Injection Scanner
-- The `SQLInjectionScanner` class sends various payloads to test the API endpoints for potential SQL Injection vulnerabilities.
-- Uses `HttpClient` to send requests and analyze responses for SQL errors.
-- Stores detected vulnerabilities in a list for further analysis and reporting.
-
-### XSS Scanner
-- The `XSSScanner` class is responsible for detecting potential Cross-Site Scripting (XSS) vulnerabilities.
-- It sends various payloads to the API to check for reflected or stored JavaScript code.
-- Detected vulnerabilities are stored in the `Vulnerabilities` list, which includes the URL where the vulnerability was found.
-
-### CSRF Scanner
-- The `CSRFScanner` class is responsible for detecting Cross-Site Request Forgery (CSRF) vulnerabilities.
-- It checks if the API responses include CSRF tokens in headers or body content.
-- If no CSRF tokens are found, the `Vulnerabilities` list stores the endpoint where the vulnerability was found.
-
-### IDOR Scanner
-- The `IDORScanner` class is responsible for detecting Insecure Direct Object Reference (IDOR) vulnerabilities.
-- It sends different object identifiers (IDs) to API endpoints to verify if unauthorized access to internal objects is possible.
-- Vulnerabilities are stored in the `Vulnerabilities` list when unauthorized access is detected.
-
-### Broken Authentication Scanner
-- The `BrokenAuthenticationScanner` class is responsible for detecting broken authentication vulnerabilities.
-- It attempts to access protected API endpoints using invalid credentials or without any authentication.
-- If access is granted without valid authentication, the endpoint is marked as vulnerable, and the `Vulnerabilities` list stores the detected issue.
-
-## Scan Scenarios (Update 10/17/2024)
+## Scan Scenarios
 
 ### SQL Injection:
-- Send inputs to the API containing SQL payloads (e.g., `'; DROP TABLE`).
-- Monitor the response to analyze for possible vulnerabilities.
+- Sends inputs to the API containing SQL payloads to analyze for potential vulnerabilities.
 
 ### XSS
-- The scanner sends various payloads such as `<script>alert('XSS')</script>` to the API endpoint.
-- If the payload is reflected in the response, the endpoint is considered vulnerable to XSS.
-- Example URL: `https://example.com/api/test?input=<script>alert('XSS')</script>`
+- Sends various payloads to the API endpoint to check for reflected or stored JavaScript code vulnerabilities.
 
 ### CSRF
-- The scanner checks if CSRF tokens are included in the response headers or body.
-- If no CSRF tokens are found, the endpoint is marked as potentially vulnerable.
-- Example URL: `https://example.com/api/test`
+- Verifies if CSRF tokens are included in the response headers or body.
 
 ### IDOR
-- The scanner sends object identifiers (IDs) to the API endpoint to verify access to resources.
-- If an unauthorized user can access internal resources using these IDs, the endpoint is considered vulnerable.
-- Example URL: `https://example.com/api/resource/1234`
+- Sends object identifiers (IDs) to the API endpoint to verify access to resources and checks if unauthorized access to internal resources is possible.
 
 ### Broken Authentication
-- The scanner attempts to access protected API endpoints without authentication or using invalid credentials.
-- If the endpoint grants access, it is considered vulnerable to broken authentication.
-- Example URL: `https://example.com/api/protected`
+- Attempts to access protected API endpoints using invalid credentials or without any authentication.
+
+## AI Recommendation Service
+
+The **AI Recommendation Service** is an integrated service that provides dynamic, context-based guidance for fixing detected vulnerabilities. It uses OpenAI’s GPT-4 model to generate recommendations based on the detected vulnerability type and relevant endpoint details. This service enhances the scanner's utility by providing actionable insights to help secure API endpoints.
 
 ## Technical Roadmap
 
-### Project Structure
-- **Scanners:** Contains classes that implement scanning for specific vulnerabilities (e.g., `SQLInjectionScanner`, `XSSScanner`, `CSRFScanner`, `IDORScanner`, `BrokenAuthenticationScanner`).
-- **Reports:** Responsible for generating detailed reports (`ReportGenerator`).
-- **Utilities:** Helper tools for scanning (e.g., JSON response analysis, HTTP request handling).
-- **Tests:** Unit tests for each scanner module.
+### Upcoming Tasks
+- **Week 7 (Nov 3 - Nov 9):** Integrate with CI/CD tools to enable automated security scans during builds and deployments.
+- **Week 8 (Nov 10 - Nov 16):** Test the package across various projects for compatibility and performance; resolve any identified issues.
+- **Week 9 (Nov 17 - Nov 23):** Document the package thoroughly, including setup and usage guides for developers.
+- **Week 10 (Nov 24 - Nov 30):** Publish the package on NuGet for the developer community.
+
+## Example of Resulting Report
+
+After each scan, a comprehensive report is generated, detailing:
+- **Detected Vulnerabilities:** Lists each vulnerability type and affected endpoints.
+- **AI Recommendations:** Provides customized guidance on addressing each detected vulnerability.
