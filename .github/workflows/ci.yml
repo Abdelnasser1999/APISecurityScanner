@@ -1,0 +1,35 @@
+name: Security Scan on Push/Pull
+
+on:
+  push:
+    branches:
+      - main
+      - '**'  
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 8.0
+
+    - name: Install Security Scanner
+      run: dotnet add package APISecurityScanner --version <latest-version>
+
+    - name: Run Security Scans
+      run: dotnet run --project ./ScannerConsoleApp
+
+    - name: Upload report as artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: Security-Scan-Report
+        path: ./ScannerConsoleApp/ReportOutput
