@@ -1,62 +1,45 @@
-# APISecurityScanner ( Update 11/02/2024 )
+# APISecurityScanner (Updated 12/06/2024)
 
-A .NET 8 NuGet package for scanning API endpoints for common security vulnerabilities like SQL Injection, XSS, CSRF, IDOR, and Broken Authentication.
+**APISecurityScanner** is a .NET 8 NuGet package that provides automated scanning of API endpoints to detect common security vulnerabilities. Designed specifically for ASP.NET projects, it integrates seamlessly with Swagger and CI/CD pipelines, leveraging AI-powered recommendations to help developers secure their APIs.
 
-## Current Scanners
-- **SQL Injection Scanner:** Tests API endpoints with various SQL payloads to detect potential vulnerabilities.
-- **XSS Scanner:** Detects Cross-Site Scripting (XSS) vulnerabilities by sending malicious JavaScript payloads and checking if they are reflected in the API response.
-- **CSRF Scanner:** Detects Cross-Site Request Forgery (CSRF) vulnerabilities by verifying the presence of CSRF tokens in API responses.
-- **IDOR Scanner:** Detects Insecure Direct Object References (IDOR) vulnerabilities by testing unauthorized access to internal objects through exposed endpoints.
-- **Broken Authentication Scanner:** Detects weaknesses in API authentication mechanisms by attempting to access protected endpoints with invalid or no credentials.
+---
 
+## **Features**
+- **Automated Scanning:** Detects vulnerabilities like SQL Injection, XSS, CSRF, IDOR, and Broken Authentication.
+- **AI Recommendations:** Utilizes Google Gemini AI to provide tailored, actionable recommendations for remediating vulnerabilities.
+- **Swagger Integration:** Automatically collects API endpoints from Swagger documentation, simplifying the setup process.
+- **CI/CD Compatibility:** Easily integrates with GitHub Actions to enable automated security checks during builds and deployments.
+- **Detailed Reporting:** Generates comprehensive, developer-friendly reports, with clear insights and remediation suggestions.
 
-### Vulnerabilities to Scan:
-- **SQL Injection:** Detects malicious SQL code in user inputs.
-- **Cross-Site Scripting (XSS):** Identifies suspicious JavaScript code that may be injected into the API.
-- **Cross-Site Request Forgery (CSRF):** Verifies if the API is vulnerable to unauthorized commands by attackers.
-- **Insecure Direct Object References (IDOR):** Checks if API endpoints expose unauthorized access to internal objects.
-- **Broken Authentication:** Analyzes endpoints for weak authentication mechanisms.
+---
 
-## Project Structure
-- **Scanners:** Contains classes that implement scanning for specific vulnerabilities (e.g., `SQLInjectionScanner`, `XSSScanner`, `CSRFScanner`, `IDORScanner`, `BrokenAuthenticationScanner`).
-- **Security Scanner Manager:** Organizes scans and coordinates the execution of different scanners. It aggregates the final results from each scanner and generates a comprehensive report.
-- **Swagger Endpoint Fetcher:** Fetches all endpoints from the Swagger documentation of the target API, analyzing required parameters to facilitate scanning.
-- **AI Recommendation Service:** A built-in service that analyzes the scan results and provides dynamic recommendations on how to address each discovered vulnerability using OpenAI's GPT-4 model.
-- **Reports:** Responsible for generating detailed reports (e.g., `ReportGenerator`).
-- **Utilities:** Helper tools for scanning, including JSON response analysis and HTTP request handling.
-- **Tests:** Unit tests for each scanner module.
+## **Supported Vulnerabilities**
+- **SQL Injection:** Identifies malicious SQL payloads that may compromise the database.
+- **Cross-Site Scripting (XSS):** Detects vulnerabilities where malicious scripts could be injected into API responses.
+- **Cross-Site Request Forgery (CSRF):** Checks for the absence of CSRF tokens, which protect APIs from unauthorized commands.
+- **Insecure Direct Object References (IDOR):** Verifies if endpoints improperly expose internal object references to unauthorized users.
+- **Broken Authentication:** Tests API endpoints for weak or missing authentication mechanisms.
 
-## Scan Scenarios
+---
 
-### SQL Injection:
-- Sends inputs to the API containing SQL payloads to analyze for potential vulnerabilities.
+## **Project Structure**
+- **`Scanners/`:** Contains specialized scanner modules for detecting vulnerabilities.
+    - **SQLInjectionScanner.cs**
+    - **XSSScanner.cs**
+    - **CSRFScanner.cs**
+    - **IDORScanner.cs**
+    - **BrokenAuthenticationScanner.cs**
+- **`Reports/`:** Manages report generation, providing actionable insights via `ReportGenerator.cs`.
+- **`Helper/`:** Utilities like `EndpointData.cs` for managing endpoint metadata.
+- **`Utils/`:** Includes tools like `SwaggerEndpointFetcher.cs` for fetching and managing API endpoints.
+- **`AI Recommendation Service/`:** Provides AI-powered recommendations by analyzing scan results using Google Gemini AI.
+- **`Tests/`:** Unit tests for individual scanner modules, ensuring accuracy and stability.
+- **`ScannerConsoleApp/`:** A console-based app to run scans and generate reports.
 
-### XSS
-- Sends various payloads to the API endpoint to check for reflected or stored JavaScript code vulnerabilities.
+---
 
-### CSRF
-- Verifies if CSRF tokens are included in the response headers or body.
+## **Installation**
+Install the package from NuGet using the following command:
 
-### IDOR
-- Sends object identifiers (IDs) to the API endpoint to verify access to resources and checks if unauthorized access to internal resources is possible.
-
-### Broken Authentication
-- Attempts to access protected API endpoints using invalid credentials or without any authentication.
-
-## AI Recommendation Service
-
-The **AI Recommendation Service** is an integrated service that provides dynamic, context-based guidance for fixing detected vulnerabilities. It uses OpenAI’s GPT-4 model to generate recommendations based on the detected vulnerability type and relevant endpoint details. This service enhances the scanner's utility by providing actionable insights to help secure API endpoints.
-
-## Technical Roadmap
-
-### Upcoming Tasks
-- **Week 7 (Nov 3 - Nov 9):** Integrate with CI/CD tools to enable automated security scans during builds and deployments.
-- **Week 8 (Nov 10 - Nov 16):** Test the package across various projects for compatibility and performance; resolve any identified issues.
-- **Week 9 (Nov 17 - Nov 23):** Document the package thoroughly, including setup and usage guides for developers.
-- **Week 10 (Nov 24 - Nov 30):** Publish the package on NuGet for the developer community.
-
-## Example of Resulting Report
-
-After each scan, a comprehensive report is generated, detailing:
-- **Detected Vulnerabilities:** Lists each vulnerability type and affected endpoints.
-- **AI Recommendations:** Provides customized guidance on addressing each detected vulnerability.
+```bash
+dotnet add package APISecurityScanner
